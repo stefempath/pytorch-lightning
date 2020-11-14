@@ -11,7 +11,6 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-import importlib
 import multiprocessing
 import platform
 from abc import ABC, abstractmethod
@@ -36,7 +35,7 @@ try:
 except ImportError:
     amp = None
 
-if importlib.util.find_spec("torch_xla"):
+if XLADeviceUtils.xla_available():
     import torch_xla.core.xla_model as xm
 
 try:
@@ -140,7 +139,7 @@ class TrainerDataLoadingMixin(ABC):
         return dataloader
 
     def _get_distributed_sampler(self, dataloader, shuffle):
-        if self.use_tpu and XLADeviceUtils.tpu_device_exists():
+        if self.use_tpu:
             kwargs = dict(num_replicas=xm.xrt_world_size(), rank=xm.get_ordinal())
         elif self.use_horovod:
             kwargs = dict(num_replicas=hvd.size(), rank=hvd.rank())
