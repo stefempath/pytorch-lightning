@@ -7,7 +7,7 @@ import pytest
 import torch
 
 from pytorch_lightning import Trainer
-from pytorch_lightning.callbacks import ModelCheckpoint
+from pytorch_lightning.callbacks import ModelCheckpoint, EarlyStopping
 from pytorch_lightning.metrics.functional.classification import auc
 from pytorch_lightning.profiler.profilers import PassThroughProfiler, SimpleProfiler
 from pytorch_lightning.utilities.exceptions import MisconfigurationException
@@ -22,6 +22,13 @@ def test_tbd_remove_in_v1_3_0(tmpdir):
     # Deprecate prefix
     with pytest.deprecated_call(match='will be removed in v1.3'):
         callback = ModelCheckpoint(prefix='temp')
+
+    # Deprecate auto mode
+    with pytest.deprecated_call(match='will be removed in v1.3'):
+        callback = ModelCheckpoint(mode='auto')
+
+    with pytest.deprecated_call(match='will be removed in v1.3'):
+        callback = EarlyStopping(mode='auto')
 
 
 def test_tbd_remove_in_v1_2_0():
