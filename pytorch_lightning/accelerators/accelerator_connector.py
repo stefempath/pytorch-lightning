@@ -25,13 +25,6 @@ from pytorch_lightning.cluster_environments.torchelastic_environment import Torc
 from pytorch_lightning.accelerators.accelerator import Accelerator
 
 try:
-    import torch_xla
-except ImportError:
-    XLA_AVAILABLE = False
-else:
-    XLA_AVAILABLE = True
-
-try:
     import horovod.torch as hvd
 except (ModuleNotFoundError, ImportError):
     HOROVOD_AVAILABLE = False
