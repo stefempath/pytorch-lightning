@@ -15,7 +15,7 @@ from pytorch_lightning import accelerators
 import os
 import torch
 
-from pytorch_lightning.utilities import device_parser
+from pytorch_lightning.utilities import device_parser, XLA_AVAILABLE
 from pytorch_lightning.utilities import rank_zero_only
 from pytorch_lightning.utilities.distributed import rank_zero_warn, rank_zero_info
 from pytorch_lightning.utilities.exceptions import MisconfigurationException
@@ -23,13 +23,6 @@ from pytorch_lightning import _logger as log
 from pytorch_lightning.cluster_environments.slurm_environment import SLURMEnvironment
 from pytorch_lightning.cluster_environments.torchelastic_environment import TorchElasticEnvironment
 from pytorch_lightning.accelerators.accelerator import Accelerator
-
-try:
-    import torch_xla
-except ImportError:
-    XLA_AVAILABLE = False
-else:
-    XLA_AVAILABLE = True
 
 try:
     import horovod.torch as hvd
@@ -220,28 +213,28 @@ class AcceleratorConnector:
             )
 
         elif use_ddp_cpu_slurm:
-            accelerator_backend = accelerators.DDPCPUSLURMAccelerator(
+            accelerator_backend = accelerators.DDPCPUHPCAccelerator(
                 self.trainer,
                 cluster_env,
                 self.trainer.plugin_connector.ddp_plugin
             )
 
         elif use_slurm_ddp:
-            accelerator_backend = accelerators.DDPSLURMAccelerator(
+            accelerator_backend = accelerators.DDPHPCAccelerator(
                 self.trainer,
                 cluster_env,
                 self.trainer.plugin_connector.ddp_plugin
             )
 
         elif use_ddp_cpu_torch_elastic:
-            accelerator_backend = accelerators.DDPCPUTorchElasticAccelerator(
+            accelerator_backend = accelerators.DDPCPUHPCAccelerator(
                 self.trainer,
                 cluster_env,
                 self.trainer.plugin_connector.ddp_plugin
             )
 
         elif use_torchelastic_ddp:
-            accelerator_backend = accelerators.DDPTorchElasticAccelerator(
+            accelerator_backend = accelerators.DDPHPCAccelerator(
                 self.trainer,
                 cluster_env,
                 self.trainer.plugin_connector.ddp_plugin

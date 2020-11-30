@@ -13,21 +13,21 @@
 # limitations under the License.
 import functools
 import importlib
+import queue as q
 from multiprocessing import Process, Queue
 
 import torch
 
-TORCHXLA_AVAILABLE = importlib.util.find_spec("torch_xla") is not None
-if TORCHXLA_AVAILABLE:
+XLA_AVAILABLE = importlib.util.find_spec("torch_xla") is not None
+
+if XLA_AVAILABLE:
     import torch_xla.core.xla_model as xm
-else:
-    xm = None
 
 
-def inner_f(queue, func, **kwargs):  # pragma: no cover
+def inner_f(queue, func, *args, **kwargs):  # pragma: no cover
     try:
-        queue.put(func(**kwargs))
-    except Exception as _e:
+        queue.put(func(*args, **kwargs))
+    except Exception:
         import traceback
 
         traceback.print_exc()
@@ -38,10 +38,13 @@ def pl_multi_process(func):
     @functools.wraps(func)
     def wrapper(*args, **kwargs):
         queue = Queue()
-        proc = Process(target=inner_f, args=(queue, func,), kwargs=kwargs)
+        proc = Process(target=inner_f, args=(queue, func, *args), kwargs=kwargs)
         proc.start()
-        proc.join()
-        return queue.get()
+        proc.join(10)
+        try:
+            return queue.get_nowait()
+        except q.Empty:
+            return False
 
     return wrapper
 
@@ -62,7 +65,7 @@ class XLADeviceUtils:
         Return:
             Returns a str of the device hardware type. i.e TPU
         """
-        if xm is not None:
+        if XLA_AVAILABLE:
             return xm.xla_device_hw(device)
 
     @staticmethod
@@ -73,7 +76,7 @@ class XLADeviceUtils:
         Return:
             A boolean value indicating if the xla device is a TPU device or not
         """
-        if xm is not None:
+        if XLA_AVAILABLE:
             device = xm.xla_device()
             device_type = XLADeviceUtils._fetch_xla_device_type(device)
             return device_type == "TPU"
@@ -86,6 +89,6 @@ class XLADeviceUtils:
         Return:
             A boolean value indicating if a TPU device exists on the system
         """
-        if XLADeviceUtils.TPU_AVAILABLE is None and TORCHXLA_AVAILABLE:
+        if XLADeviceUtils.TPU_AVAILABLE is None and XLA_AVAILABLE:
             XLADeviceUtils.TPU_AVAILABLE = pl_multi_process(XLADeviceUtils._is_device_tpu)()
         return XLADeviceUtils.TPU_AVAILABLE

@@ -85,7 +85,14 @@ The :func:`~~pytorch_lightning.core.lightning.LightningModule.log` method has a 
 * `logger`: Logs to the logger like Tensorboard, or any other custom logger passed to the :class:`~pytorch_lightning.trainer.trainer.Trainer`.
 
 
-.. note:: Setting `on_epoch=True` will accumulate your logged values over the full training epoch.
+.. note::
+
+    -   Setting ``on_epoch=True`` will cache all your logged values during the full training epoch and perform a
+        reduction `on_epoch_end`. We recommend using the :ref:`metrics` API when working with custom reduction.
+
+    -   Setting both ``on_step=True`` and ``on_epoch=True`` will create two keys per metric you log with
+        suffix ``_step`` and ``_epoch``, respectively. You can refer to these keys e.g. in the `monitor`
+        argument of :class:`~pytorch_lightning.callbacks.model_checkpoint.ModelCheckpoint` or in the graphs plotted to the logger of your choice.
 
 
 Manual logging
@@ -260,12 +267,12 @@ Logging hyperparameters
 ***********************
 
 When training a model, it's useful to know what hyperparams went into that model.
-When Lightning creates a checkpoint, it stores a key "hparams" with the hyperparams.
+When Lightning creates a checkpoint, it stores a key "hyper_parameters" with the hyperparams.
 
 .. code-block:: python
 
     lightning_checkpoint = torch.load(filepath, map_location=lambda storage, loc: storage)
-    hyperparams = lightning_checkpoint['hparams']
+    hyperparams = lightning_checkpoint['hyper_parameters']
 
 Some loggers also allow logging the hyperparams used in the experiment. For instance,
 when using the TestTubeLogger or the TensorBoardLogger, all hyperparams will show
@@ -293,44 +300,27 @@ Supported Loggers
 
 The following are loggers we support
 
-Comet
-=====
+.. note::
+    The following loggers will normally plot an additional chart (**global_step VS epoch**).
 
-.. autoclass:: pytorch_lightning.loggers.comet.CometLogger
-    :noindex:
+.. note::
+    postfix ``_step`` and ``_epoch`` will be appended to the name you logged
+    if ``on_step`` and ``on_epoch`` are set to ``True`` in ``self.log()``.
 
-CSVLogger
-=========
+.. note::
+    Depending on the loggers you use, there might be some additional charts.
 
-.. autoclass:: pytorch_lightning.loggers.csv_logs.CSVLogger
-    :noindex:
+.. currentmodule:: pytorch_lightning.loggers
 
-MLFlow
-======
+.. autosummary::
+    :toctree: generated
+    :nosignatures:
+    :template: classtemplate.rst
 
-.. autoclass:: pytorch_lightning.loggers.mlflow.MLFlowLogger
-    :noindex:
-
-Neptune
-=======
-
-.. autoclass:: pytorch_lightning.loggers.neptune.NeptuneLogger
-    :noindex:
-
-Tensorboard
-============
-
-.. autoclass:: pytorch_lightning.loggers.tensorboard.TensorBoardLogger
-    :noindex:
-
-Test-tube
-=========
-
-.. autoclass:: pytorch_lightning.loggers.test_tube.TestTubeLogger
-    :noindex:
-
-Weights and Biases
-==================
-
-.. autoclass:: pytorch_lightning.loggers.wandb.WandbLogger
-    :noindex:
+    CometLogger
+    CSVLogger
+    MLFlowLogger
+    NeptuneLogger
+    TensorBoardLogger
+    TestTubeLogger
+    WandbLogger
