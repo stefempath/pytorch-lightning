@@ -30,11 +30,6 @@ from pytorch_lightning.utilities.exceptions import MisconfigurationException
 from pytorch_lightning.utilities.model_utils import is_overridden
 from pytorch_lightning.utilities.xla_device_utils import XLADeviceUtils
 
-try:
-    from apex import amp
-except ImportError:
-    amp = None
-
 if XLADeviceUtils.xla_available():
     import torch_xla.core.xla_model as xm
 
