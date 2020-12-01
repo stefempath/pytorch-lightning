@@ -1,4 +1,4 @@
-coverage>=5.0
+coverage
 codecov>=2.1
 pytest>=5.0
 pytest-cov
@@ -12,5 +12,5 @@ black>=20.8b1
 isort>=5.6.4
 pre-commit>=1.0
 
-cloudpickle>=1.2
+cloudpickle
 nltk>=3.3
